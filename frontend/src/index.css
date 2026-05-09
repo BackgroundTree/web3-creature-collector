@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Pixel font — after adding the <link> to index.html */
+  body {
+    font-family: 'Press Start 2P', monospace;
+  }
+}
+
+@layer utilities {
+  /* Referenced in BattleUI.tsx but never defined */
+  .pixel-border {
+    image-rendering: pixelated;
+  }
+
+  .image-rendering-pixelated {
+    image-rendering: pixelated;
+  }
+}

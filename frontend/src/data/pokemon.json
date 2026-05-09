@@ -1,0 +1,734 @@
+{
+  "bulbasaur": {
+    "id": 1,
+    "name": "Bulbasaur",
+    "types": ["Grass", "Poison"],
+    "baseStats": {
+      "hp": 45,
+      "atk": 49,
+      "def": 49,
+      "spAtk": 65,
+      "spDef": 65,
+      "spd": 45
+    },
+    "moves": {
+      "1": ["tackle", "growl"],
+      "3": ["vine_whip"],
+      "6": ["growth"],
+      "9": ["leech_seed"],
+      "12": ["razor_leaf"],
+      "15": ["poison_powder", "sleep_powder"],
+      "18": ["seed_bomb"],
+      "21": ["take_down"],
+      "24": ["sweet_scent"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 16,
+      "evolvesTo": "ivysaur"
+    }
+  },
+  "ivysaur": {
+    "id": 2,
+    "name": "Ivysaur",
+    "types": ["Grass", "Poison"],
+    "baseStats": {
+      "hp": 60,
+      "atk": 62,
+      "def": 63,
+      "spAtk": 80,
+      "spDef": 80,
+      "spd": 60
+    },
+    "moves": {
+      "1": ["tackle", "growl", "vine_whip", "growth", "leech_seed", "razor_leaf", "poison_powder", "sleep_powder"],
+      "20": ["seed_bomb"],
+      "25": ["take_down"]
+    },
+    "evolution": null
+  },
+  "charmander": {
+    "id": 4,
+    "name": "Charmander",
+    "types": ["Fire"],
+    "baseStats": {
+      "hp": 39,
+      "atk": 52,
+      "def": 43,
+      "spAtk": 60,
+      "spDef": 50,
+      "spd": 65
+    },
+    "moves": {
+      "1": ["scratch", "growl"],
+      "4": ["ember"],
+      "8": ["smokescreen"],
+      "12": ["dragon_breath"],
+      "17": ["fire_fang"],
+      "20": ["slash"],
+      "24": ["flamethrower"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 16,
+      "evolvesTo": "charmeleon"
+    }
+  },
+  "charmeleon": {
+    "id": 5,
+    "name": "Charmeleon",
+    "types": ["Fire"],
+    "baseStats": {
+      "hp": 58,
+      "atk": 64,
+      "def": 58,
+      "spAtk": 80,
+      "spDef": 65,
+      "spd": 80
+    },
+    "moves": {
+      "1": ["scratch", "growl", "ember", "smokescreen", "dragon_breath"],
+      "19": ["fire_fang"],
+      "24": ["slash"]
+    },
+    "evolution": null
+  },
+  "squirtle": {
+    "id": 7,
+    "name": "Squirtle",
+    "types": ["Water"],
+    "baseStats": {
+      "hp": 44,
+      "atk": 48,
+      "def": 65,
+      "spAtk": 50,
+      "spDef": 64,
+      "spd": 43
+    },
+    "moves": {
+      "1": ["tackle", "tail_whip"],
+      "3": ["water_gun"],
+      "6": ["withdraw"],
+      "9": ["rapid_spin"],
+      "12": ["bite"],
+      "15": ["water_pulse"],
+      "18": ["protect"],
+      "21": ["rain_dance"],
+      "24": ["aqua_tail"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 16,
+      "evolvesTo": "wartortle"
+    }
+  },
+  "wartortle": {
+    "id": 8,
+    "name": "Wartortle",
+    "types": ["Water"],
+    "baseStats": {
+      "hp": 59,
+      "atk": 63,
+      "def": 80,
+      "spAtk": 65,
+      "spDef": 80,
+      "spd": 58
+    },
+    "moves": {
+      "1": ["tackle", "tail_whip", "water_gun", "withdraw", "rapid_spin", "bite", "water_pulse"],
+      "20": ["protect"],
+      "25": ["rain_dance"]
+    },
+    "evolution": null
+  },
+"caterpie": {
+    "id": 10,
+    "name": "Caterpie",
+    "types": ["Bug"],
+    "baseStats": {
+      "hp": 45,
+      "atk": 30,
+      "def": 35,
+      "spAtk": 20,
+      "spDef": 20,
+      "spd": 45
+    },
+    "moves": {
+      "1": ["tackle", "string_shot"],
+      "9": ["bug_bite"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 7,
+      "evolvesTo": "metapod"
+    }
+  },
+  "metapod": {
+    "id": 11,
+    "name": "Metapod",
+    "types": ["Bug"],
+    "baseStats": {
+      "hp": 50,
+      "atk": 20,
+      "def": 55,
+      "spAtk": 25,
+      "spDef": 25,
+      "spd": 30
+    },
+    "moves": {
+      "1": ["tackle", "string_shot", "harden"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 10,
+      "evolvesTo": "butterfree"
+    }
+  },
+  "butterfree": {
+    "id": 12,
+    "name": "Butterfree",
+    "types": ["Bug", "Flying"],
+    "baseStats": {
+      "hp": 60,
+      "atk": 45,
+      "def": 50,
+      "spAtk": 90,
+      "spDef": 80,
+      "spd": 70
+    },
+    "moves": {
+      "1": ["tackle", "string_shot", "harden", "gust"],
+      "11": ["confusion"],
+      "13": ["poison_powder", "stun_spore", "sleep_powder"],
+      "17": ["psybeam"],
+      "19": ["whirlwind"],
+      "23": ["air_slash"]
+    },
+    "evolution": null
+  },
+  "weedle": {
+    "id": 13,
+    "name": "Weedle",
+    "types": ["Bug", "Poison"],
+    "baseStats": {
+      "hp": 40,
+      "atk": 35,
+      "def": 30,
+      "spAtk": 20,
+      "spDef": 20,
+      "spd": 50
+    },
+    "moves": {
+      "1": ["poison_sting", "string_shot"],
+      "9": ["bug_bite"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 7,
+      "evolvesTo": "kakuna"
+    }
+  },
+  "kakuna": {
+    "id": 14,
+    "name": "Kakuna",
+    "types": ["Bug", "Poison"],
+    "baseStats": {
+      "hp": 45,
+      "atk": 25,
+      "def": 50,
+      "spAtk": 25,
+      "spDef": 25,
+      "spd": 35
+    },
+    "moves": {
+      "1": ["poison_sting", "string_shot", "harden"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 10,
+      "evolvesTo": "beedrill"
+    }
+  },
+  "beedrill": {
+    "id": 15,
+    "name": "Beedrill",
+    "types": ["Bug", "Poison"],
+    "baseStats": {
+      "hp": 65,
+      "atk": 90,
+      "def": 40,
+      "spAtk": 45,
+      "spDef": 80,
+      "spd": 75
+    },
+    "moves": {
+      "1": ["poison_sting", "string_shot", "harden"],
+      "11": ["pin_missile"],
+      "14": ["focus_energy"],
+      "17": ["brutal_swing"],
+      "20": ["x_scissor"]
+    },
+    "evolution": null
+  },
+  "pidgey": {
+    "id": 16,
+    "name": "Pidgey",
+    "types": ["Normal", "Flying"],
+    "baseStats": {
+      "hp": 40,
+      "atk": 45,
+      "def": 40,
+      "spAtk": 35,
+      "spDef": 35,
+      "spd": 56
+    },
+    "moves": {
+      "1": ["tackle", "sand_attack"],
+      "5": ["gust"],
+      "9": ["quick_attack"],
+      "13": ["whirlwind"],
+      "17": ["twister"],
+      "21": ["wing_attack"],
+      "25": ["agility"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 18,
+      "evolvesTo": "pidgeotto"
+    }
+  },
+  "pidgeotto": {
+    "id": 17,
+    "name": "Pidgeotto",
+    "types": ["Normal", "Flying"],
+    "baseStats": {
+      "hp": 63,
+      "atk": 60,
+      "def": 55,
+      "spAtk": 50,
+      "spDef": 50,
+      "spd": 71
+    },
+    "moves": {
+      "1": ["tackle", "sand_attack", "gust", "quick_attack", "whirlwind", "twister"],
+      "22": ["wing_attack"]
+    },
+    "evolution": null
+  },
+  "rattata": {
+    "id": 19,
+    "name": "Rattata",
+    "types": ["Normal"],
+    "baseStats": {
+      "hp": 30,
+      "atk": 56,
+      "def": 35,
+      "spAtk": 25,
+      "spDef": 35,
+      "spd": 72
+    },
+    "moves": {
+      "1": ["tackle", "tail_whip"],
+      "4": ["quick_attack"],
+      "7": ["focus_energy"],
+      "10": ["bite"],
+      "13": ["laser_focus"],
+      "16": ["hyper_fang"],
+      "19": ["scary_face"],
+      "22": ["crunch"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 20,
+      "evolvesTo": "raticate"
+    }
+  },
+  "raticate": {
+    "id": 20,
+    "name": "Raticate",
+    "types": ["Normal"],
+    "baseStats": {
+      "hp": 55,
+      "atk": 81,
+      "def": 60,
+      "spAtk": 50,
+      "spDef": 70,
+      "spd": 97
+    },
+    "moves": {
+      "1": ["tackle", "tail_whip", "quick_attack", "focus_energy", "bite", "laser_focus", "hyper_fang", "scary_face"],
+      "24": ["crunch"]
+    },
+    "evolution": null
+  },
+  "ekans": {
+    "id": 23,
+    "name": "Ekans",
+    "types": ["Poison"],
+    "baseStats": {
+      "hp": 35,
+      "atk": 60,
+      "def": 44,
+      "spAtk": 40,
+      "spDef": 54,
+      "spd": 55
+    },
+    "moves": {
+      "1": ["leer", "poison_sting"],
+      "4": ["bite"],
+      "9": ["glare"],
+      "12": ["acid"],
+      "17": ["acid_spray"],
+      "20": ["mud_shot"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 22,
+      "evolvesTo": "arbok"
+    }
+  },
+  "arbok": {
+    "id": 24,
+    "name": "Arbok",
+    "types": ["Poison"],
+    "baseStats": {
+      "hp": 60,
+      "atk": 95,
+      "def": 69,
+      "spAtk": 65,
+      "spDef": 79,
+      "spd": 80
+    },
+    "moves": {
+      "1": ["leer", "poison_sting", "bite", "glare", "acid", "acid_spray", "mud_shot"],
+      "24": ["crunch"]
+    },
+    "evolution": null
+  },
+  "pikachu": {
+    "id": 25,
+    "name": "Pikachu",
+    "types": ["Electric"],
+    "baseStats": {
+      "hp": 35,
+      "atk": 55,
+      "def": 40,
+      "spAtk": 50,
+      "spDef": 50,
+      "spd": 90
+    },
+    "moves": {
+      "1": ["thunder_shock", "growl"],
+      "5": ["play_nice"],
+      "7": ["quick_attack"],
+      "10": ["electro_ball"],
+      "13": ["thunder_wave"],
+      "18": ["feint"],
+      "21": ["spark"]
+    },
+    "evolution": {
+      "method": "item",
+      "item": "thunder_stone",
+      "evolvesTo": "raichu"
+    }
+  },
+  "raichu": {
+    "id": 26,
+    "name": "Raichu",
+    "types": ["Electric"],
+    "baseStats": {
+      "hp": 60,
+      "atk": 90,
+      "def": 55,
+      "spAtk": 90,
+      "spDef": 80,
+      "spd": 110
+    },
+    "moves": {
+      "1": ["thunder_shock", "growl", "play_nice", "quick_attack", "electro_ball", "thunder_wave", "feint", "spark"]
+    },
+    "evolution": null
+  },
+  "nidoran_m": {
+    "id": 32,
+    "name": "Nidoran♂",
+    "types": ["Poison"],
+    "baseStats": {
+      "hp": 46,
+      "atk": 57,
+      "def": 40,
+      "spAtk": 40,
+      "spDef": 40,
+      "spd": 50
+    },
+    "moves": {
+      "1": ["leer", "peck"],
+      "5": ["focus_energy"],
+      "9": ["double_kick"],
+      "13": ["poison_sting"],
+      "21": ["horn_attack"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 16,
+      "evolvesTo": "nidorino"
+    }
+  },
+  "nidorino": {
+    "id": 33,
+    "name": "Nidorino",
+    "types": ["Poison"],
+    "baseStats": {
+      "hp": 61,
+      "atk": 72,
+      "def": 57,
+      "spAtk": 55,
+      "spDef": 55,
+      "spd": 65
+    },
+    "moves": {
+      "1": ["leer", "peck", "focus_energy", "double_kick", "poison_sting"],
+      "22": ["horn_attack"]
+    },
+    "evolution": {
+      "method": "item",
+      "item": "moon_stone",
+      "evolvesTo": "nidoking"
+    }
+  },
+  "nidoking": {
+    "id": 34,
+    "name": "Nidoking",
+    "types": ["Poison", "Ground"],
+    "baseStats": {
+      "hp": 81,
+      "atk": 102,
+      "def": 77,
+      "spAtk": 85,
+      "spDef": 75,
+      "spd": 85
+    },
+    "moves": {
+      "1": ["leer", "peck", "focus_energy", "double_kick", "poison_sting", "horn_attack"]
+    },
+    "evolution": null
+  },
+  "vulpix": {
+    "id": 37,
+    "name": "Vulpix",
+    "types": ["Fire"],
+    "baseStats": {
+      "hp": 38,
+      "atk": 41,
+      "def": 40,
+      "spAtk": 50,
+      "spDef": 65,
+      "spd": 65
+    },
+    "moves": {
+      "1": ["tackle", "tail_whip"],
+      "7": ["ember"],
+      "14": ["quick_attack"],
+      "24": ["flamethrower"]
+    },
+    "evolution": {
+      "method": "item",
+      "item": "fire_stone",
+      "evolvesTo": "ninetales"
+    }
+  },
+  "ninetales": {
+    "id": 38,
+    "name": "Ninetales",
+    "types": ["Fire"],
+    "baseStats": {
+      "hp": 73,
+      "atk": 76,
+      "def": 75,
+      "spAtk": 81,
+      "spDef": 100,
+      "spd": 100
+    },
+    "moves": {
+      "1": ["tackle", "tail_whip", "ember", "quick_attack", "flamethrower"]
+    },
+    "evolution": null
+  },
+  "sandshrew": {
+    "id": 27,
+    "name": "Sandshrew",
+    "types": ["Ground"],
+    "baseStats": {
+      "hp": 50,
+      "atk": 75,
+      "def": 85,
+      "spAtk": 20,
+      "spDef": 30,
+      "spd": 40
+    },
+    "moves": {
+      "1": ["scratch", "defense_curl"],
+      "3": ["poison_sting"],
+      "6": ["sand_attack"],
+      "9": ["rollout"],
+      "12": ["fury_swipes"],
+      "15": ["bulldoze"],
+      "18": ["sand_tomb"],
+      "21": ["swift"],
+      "24": ["agility"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 22,
+      "evolvesTo": "sandslash"
+    }
+  },
+  "sandslash": {
+    "id": 28,
+    "name": "Sandslash",
+    "types": ["Ground"],
+    "baseStats": {
+      "hp": 75,
+      "atk": 100,
+      "def": 110,
+      "spAtk": 45,
+      "spDef": 55,
+      "spd": 65
+    },
+    "moves": {
+      "1": ["scratch", "defense_curl", "poison_sting", "sand_attack", "rollout", "fury_swipes", "bulldoze", "sand_tomb", "swift"],
+      "24": ["agility"]
+    },
+    "evolution": null
+  },
+  "mankey": {
+    "id": 56,
+    "name": "Mankey",
+    "types": ["Fighting"],
+    "baseStats": {
+      "hp": 40,
+      "atk": 80,
+      "def": 35,
+      "spAtk": 35,
+      "spDef": 45,
+      "spd": 70
+    },
+    "moves": {
+      "1": ["covet", "scratch", "low_kick", "leer"],
+      "5": ["fury_swipes"],
+      "8": ["karate_chop"],
+      "12": ["pursuit"],
+      "15": ["seismic_toss"],
+      "19": ["swagger"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 20,
+      "evolvesTo": "primeape"
+    }
+  },
+  "primeape": {
+    "id": 57,
+    "name": "Primeape",
+    "types": ["Fighting"],
+    "baseStats": {
+      "hp": 65,
+      "atk": 105,
+      "def": 60,
+      "spAtk": 60,
+      "spDef": 70,
+      "spd": 95
+    },
+    "moves": {
+      "1": ["covet", "scratch", "low_kick", "leer", "fury_swipes", "karate_chop", "pursuit", "seismic_toss", "swagger"],
+      "21": ["cross_chop"]
+    },
+    "evolution": null
+  },
+  "abra": {
+    "id": 63,
+    "name": "Abra",
+    "types": ["Psychic"],
+    "baseStats": {
+      "hp": 25,
+      "atk": 20,
+      "def": 15,
+      "spAtk": 105,
+      "spDef": 55,
+      "spd": 90
+    },
+    "moves": {
+      "1": ["confusion"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 16,
+      "evolvesTo": "kadabra"
+    }
+  },
+  "kadabra": {
+    "id": 64,
+    "name": "Kadabra",
+    "types": ["Psychic"],
+    "baseStats": {
+      "hp": 40,
+      "atk": 35,
+      "def": 30,
+      "spAtk": 120,
+      "spDef": 70,
+      "spd": 105
+    },
+    "moves": {
+      "1": ["confusion", "kinesis"],
+      "16": ["confusion"],
+      "21": ["disable"]
+    },
+    "evolution": null
+  },
+  "geodude": {
+    "id": 74,
+    "name": "Geodude",
+    "types": ["Rock", "Ground"],
+    "baseStats": {
+      "hp": 40,
+      "atk": 80,
+      "def": 100,
+      "spAtk": 30,
+      "spDef": 30,
+      "spd": 20
+    },
+    "moves": {
+      "1": ["tackle", "defense_curl"],
+      "4": ["mud_sport"],
+      "6": ["rock_polish"],
+      "10": ["rollout"],
+      "12": ["magnitude"],
+      "16": ["rock_throw"],
+      "18": ["smack_down"],
+      "22": ["bulldoze"],
+      "24": ["self_destruct"]
+    },
+    "evolution": {
+      "method": "level",
+      "level": 25,
+      "evolvesTo": "graveler"
+    }
+  },
+  "graveler": {
+    "id": 75,
+    "name": "Graveler",
+    "types": ["Rock", "Ground"],
+    "baseStats": {
+      "hp": 55,
+      "atk": 95,
+      "def": 115,
+      "spAtk": 45,
+      "spDef": 45,
+      "spd": 35
+    },
+    "moves": {
+      "1": ["tackle", "defense_curl", "mud_sport", "rock_polish", "rollout", "magnitude", "rock_throw", "smack_down", "bulldoze", "self_destruct"]
+    },
+    "evolution": null
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "shop_items": {
+    "potion": { "id": 1, "name": "Potion", "type": "instant_heal", "effect": 20, "price": 100 },
+    "super_potion": { "id": 2, "name": "Super Potion", "type": "instant_heal", "effect": 50, "price": 300, "unlockStage": 10 },
+    "revive": { "id": 3, "name": "Revive", "type": "instant_revive", "effect": 0.5, "price": 500 },
+    "max_revive": { "id": 4, "name": "Max Revive", "type": "instant_revive", "effect": 1.0, "price": 1500, "unlockStage": 20 },
+    "ether": { "id": 5, "name": "Ether", "type": "instant_pp", "effect": 10, "price": 200 },
+    "rare_candy": { "id": 6, "name": "Rare Candy", "type": "instant_level", "effect": 1, "price": 1000, "unlockStage": 5 }
+  },
+  "drop_items": {
+    "evolution_stones": {
+      "thunder_stone": { "id": 10, "name": "Thunder Stone", "target": "pikachu", "weight": 10 },
+      "fire_stone": { "id": 11, "name": "Fire Stone", "target": "vulpix", "weight": 10 },
+      "moon_stone": { "id": 12, "name": "Moon Stone", "target": "nidorino", "weight": 10 }
+    },
+    "berries": {
+      "oran_berry": { "id": 20, "name": "Oran Berry", "trigger": "hp_below_50", "effect": 10, "weight": 50 },
+      "sitrus_berry": { "id": 21, "name": "Sitrus Berry", "trigger": "hp_below_50", "effect": 30, "weight": 20 },
+      "pecha_berry": { "id": 22, "name": "Pecha Berry", "trigger": "status_poison", "effect": "cure", "weight": 30 },
+      "cheri_berry": { "id": 23, "name": "Cheri Berry", "trigger": "status_paralysis", "effect": "cure", "weight": 30 },
+      "rawst_berry": { "id": 24, "name": "Rawst Berry", "trigger": "status_burn", "effect": "cure", "weight": 30 },
+      "chesto_berry": { "id": 25, "name": "Chesto Berry", "trigger": "status_sleep", "effect": "cure", "weight": 30 },
+      "lum_berry": { "id": 26, "name": "Lum Berry", "trigger": "status_any", "effect": "cure", "weight": 20 }
+    },
+    "type_boosters": {
+      "miracle_seed": { "id": 30, "name": "Miracle Seed", "boosts": "Grass", "multiplier": 1.1, "weight": 15 },
+      "charcoal": { "id": 31, "name": "Charcoal", "boosts": "Fire", "multiplier": 1.1, "weight": 15 },
+      "mystic_water": { "id": 32, "name": "Mystic Water", "boosts": "Water", "multiplier": 1.1, "weight": 15 },
+      "silk_scarf": { "id": 33, "name": "Silk Scarf", "boosts": "Normal", "multiplier": 1.1, "weight": 15 },
+      "poison_barb": { "id": 34, "name": "Poison Barb", "boosts": "Poison", "multiplier": 1.1, "weight": 15 },
+      "sharp_beak": { "id": 35, "name": "Sharp Beak", "boosts": "Flying", "multiplier": 1.1, "weight": 15 },
+      "silver_powder": { "id": 36, "name": "Silver Powder", "boosts": "Bug", "multiplier": 1.1, "weight": 15 },
+      "magnet": { "id": 37, "name": "Magnet", "boosts": "Electric", "multiplier": 1.1, "weight": 15 },
+      "soft_sand": { "id": 38, "name": "Soft Sand", "boosts": "Ground", "multiplier": 1.1, "weight": 15 },
+      "black_belt": { "id": 39, "name": "Black Belt", "boosts": "Fighting", "multiplier": 1.1, "weight": 15 },
+      "hard_stone": { "id": 40, "name": "Hard Stone", "boosts": "Rock", "multiplier": 1.1, "weight": 15 },
+      "twisted_spoon": { "id": 41, "name": "Twisted Spoon", "boosts": "Psychic", "multiplier": 1.1, "weight": 15 }
+    },
+    "x_items": {
+      "x_attack": { "id": 50, "name": "X Attack", "duration": 3, "stat": "atk", "stages": 1, "weight": 25 },
+      "x_defense": { "id": 51, "name": "X Defense", "duration": 3, "stat": "def", "stages": 1, "weight": 25 },
+      "x_speed": { "id": 52, "name": "X Speed", "duration": 3, "stat": "spd", "stages": 1, "weight": 25 },
+      "x_sp_atk": { "id": 53, "name": "X Sp. Atk", "duration": 3, "stat": "spAtk", "stages": 1, "weight": 25 },
+      "x_sp_def": { "id": 54, "name": "X Sp. Def", "duration": 3, "stat": "spDef", "stages": 1, "weight": 25 }
+    },
+    "currency": {
+      "relic_copper": { "id": 60, "name": "Relic Coin", "yield": 50, "weight": 60 },
+      "relic_silver": { "id": 61, "name": "Relic Pouch", "yield": 150, "weight": 25 },
+      "relic_gold": { "id": 62, "name": "Relic Crate", "yield": 500, "weight": 5 }
+    }
+  }
+}
