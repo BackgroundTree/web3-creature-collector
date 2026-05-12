@@ -1,40 +1,11 @@
 import './BattleScreen.css';
 import React, { useState, useEffect, useRef } from "react";
-// Web3 Imports
 import { useAccount, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from './contracts/config';
-
-// ─── TYPE DEFINITIONS ────────────────────────────────────────────────────────
-
-interface Pokemon {
-  id: number;
-  name: string;
-  isShiny: boolean;
-  level: number;
-  hp: number;
-  maxHp: number;
-  type1: string;
-  type2: string | null;
-  status: string | null;
-  sprite?: string;
-  flash?: boolean;
-}
-
-interface Move {
-  name: string;
-  type: string;
-  pp: number;
-  maxPp: number;
-  power: number | null;
-  category: string;
-}
-
-interface PartyMember extends Pokemon {
-  active: boolean;
-}
-
-// ─── UTILITY HELPERS ─────────────────────────────────────────────────────────
+import { useBattleEngine } from './hooks/useBattleEngine';
+import { buildPokemon, buildRandomEnemy } from './data/pokemonUtils';
+import type { Pokemon as BattlePokemon, Move, TurnLogEntry } from './types';
 
 const TYPE_COLORS: Record<string, string> = {
   Fire: "#c95c00", Water: "#1a6fa8", Grass: "#2d7a1e", Electric: "#b09400",
@@ -50,11 +21,7 @@ function getHpColor(pct: number): string {
   return "var(--hp-red)";
 }
 
-interface TypeBadgeProps {
-  type?: string;
-}
-
-function TypeBadge({ type }: TypeBadgeProps): React.ReactElement {
+function TypeBadge({ type }: { type?: string }): React.ReactElement {
   return (
     <span
       className="type-badge"
@@ -65,13 +32,7 @@ function TypeBadge({ type }: TypeBadgeProps): React.ReactElement {
   );
 }
 
-interface HpBarProps {
-  current: number;
-  max: number;
-  size?: "sm" | "md";
-}
-
-function HpBar({ current, max, size = "md" }: HpBarProps): React.ReactElement {
+function HpBar({ current, max, size = "md" }: { current: number; max: number; size?: "sm" | "md" }): React.ReactElement {
   const pct = Math.max(0, Math.min(1, current / max));
   const h = size === "sm" ? "4px" : "8px";
   return (
@@ -84,11 +45,7 @@ function HpBar({ current, max, size = "md" }: HpBarProps): React.ReactElement {
   );
 }
 
-interface StatusBadgeProps {
-  status?: string | null;
-}
-
-function StatusBadge({ status }: StatusBadgeProps): React.ReactElement | null {
+function StatusBadge({ status }: { status?: string | null }): React.ReactElement | null {
   if (!status) return null;
   const map: Record<string, { bg: string; label: string }> = {
     BRN: { bg: "#7a2200", label: "BRN" },
@@ -106,74 +63,11 @@ function StatusBadge({ status }: StatusBadgeProps): React.ReactElement | null {
   );
 }
 
-// ─── MOCK DATA ───────────────────────────────────────────────────────────────
-
-const MOCK_PLAYER: Pokemon = {
-  id: 5,
-  name: "Charmeleon",
-  isShiny: false,
-  level: 24,
-  hp: 112,
-  maxHp: 150,
-  type1: "Fire",
-  type2: null,
-  status: null,
-};
-
-const MOCK_ENEMY: Pokemon = {
-  id: 33,
-  name: "Nidorino",
-  isShiny: true,
-  level: 23,
-  hp: 68,
-  maxHp: 170,
-  type1: "Poison",
-  type2: null,
-  status: null,
-};
-
-const MOCK_MOVES: Move[] = [
-  { name: "Flamethrower", type: "Fire",    pp: 10, maxPp: 15, power: 90, category: "Special" },
-  { name: "Air Slash",    type: "Flying",  pp: 7,  maxPp: 15, power: 75, category: "Special" },
-  { name: "Dragon Claw",  type: "Dragon",  pp: 15, maxPp: 15, power: 80, category: "Physical" },
-  { name: "Roost",        type: "Flying",  pp: 5,  maxPp: 10, power: null, category: "Status" },
-];
-
-const MOCK_PARTY: PartyMember[] = [
-  { id: 1, name: "Charizard", hp: 112, maxHp: 150, level: 24, type1: "Fire",    type2: null, status: null, isShiny: false, sprite: "🔥", active: true },
-  { id: 2, name: "Blastoise", hp: 140, maxHp: 160, level: 23, type1: "Water",   type2: null, status: null, isShiny: false, sprite: "💧", active: false },
-  { id: 3, name: "Venusaur",  hp: 0,   maxHp: 145, level: 22, type1: "Grass",   type2: null, status: null, isShiny: false, sprite: "🌿", active: false },
-  { id: 4, name: "Gengar",    hp: 95,  maxHp: 120, level: 21, type1: "Ghost",   type2: null, status: null, isShiny: false, sprite: "👻", active: false },
-  { id: 5, name: "Machamp",   hp: 130, maxHp: 155, level: 20, type1: "Fighting", type2: null, status: null, isShiny: false, sprite: "👊", active: false },
-  { id: 6, name: "Alakazam",  hp: 0,   maxHp: 110, level: 19, type1: "Psychic", type2: null, status: null, isShiny: false, sprite: "🔮", active: false },
-];
-
-const MOCK_LOG: string[] = [
-  "Run initialized — Floor 3 · Boss Encounter",
-  "Wild GYARADOS appeared!",
-  "Go! CHARIZARD!",
-  "GYARADOS used Hydro Pump!",
-  "It's super effective! CHARIZARD lost 38 HP.",
-  "CHARIZARD's Blaze activated!",
-  "CHARIZARD used Flamethrower!",
-  "GYARADOS lost 52 HP.",
-];
-
-// ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
-
-interface RunStatusBarProps {
-  floor: number;
-  gold: number;
-  kills: number;
-}
-
-function RunStatusBar({ floor, gold, kills }: RunStatusBarProps): React.ReactElement {
+function RunStatusBar({ floor, gold, kills }: { floor: number; gold: number; kills: number }): React.ReactElement {
   return (
     <div className="run-status-bar">
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span className="run-status-title">
-          ◆ ROGUELITE BATTLE CLIENT ◆
-        </span>
+        <span className="run-status-title">◆ ROGUELITE BATTLE CLIENT ◆</span>
       </div>
       <div style={{ display: "flex", gap: 8 }}>
         <span className="run-chip">FLOOR {floor}</span>
@@ -182,99 +76,72 @@ function RunStatusBar({ floor, gold, kills }: RunStatusBarProps): React.ReactEle
       </div>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <div className="status-indicator" />
-        <span className="status-text">
-          ON-CHAIN READY
-        </span>
+        <span className="status-text">ON-CHAIN READY</span>
       </div>
     </div>
   );
 }
 
-interface TheaterHpBlockProps {
-  pokemon: Pokemon;
-  isEnemy: boolean;
-}
-
-function TheaterHpBlock({ pokemon, isEnemy }: TheaterHpBlockProps): React.ReactElement {
-  const pct = pokemon.hp / pokemon.maxHp;
+function TheaterHpBlock({ pokemon, isEnemy }: { pokemon: BattlePokemon; isEnemy: boolean }): React.ReactElement {
+  const pct = pokemon.currentHp / pokemon.stats.hp;
   return (
     <div className={`theater-hp-block ${isEnemy ? "enemy" : "player"}`}>
-      {/* corner chrome */}
       <div className={`theater-hp-corner ${isEnemy ? "left" : "right"}`} />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <div>
-          <span className="theater-pokemon-name">
-            {pokemon.name}
-          </span>
-          <span className="theater-pokemon-level">
-            Lv.{pokemon.level}
-          </span>
+          <span className="theater-pokemon-name">{pokemon.name}</span>
+          <span className="theater-pokemon-level">Lv.{pokemon.level}</span>
         </div>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-          <StatusBadge status={pokemon.status} />
-          <TypeBadge type={pokemon.type1} />
-          {pokemon.type2 && <TypeBadge type={pokemon.type2} />}
+          <StatusBadge status={null} />
+          <TypeBadge type={pokemon.types[0]} />
+          {pokemon.types[1] && <TypeBadge type={pokemon.types[1]} />}
         </div>
       </div>
 
-      <HpBar current={pokemon.hp} max={pokemon.maxHp} size="md" />
+      <HpBar current={pokemon.currentHp} max={pokemon.stats.hp} size="md" />
 
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
         <span className="stat-label">HP</span>
         <span className="theater-hp-text" style={{ color: getHpColor(pct) }}>
-          {pokemon.hp} / {pokemon.maxHp}
+          {pokemon.currentHp} / {pokemon.stats.hp}
         </span>
       </div>
     </div>
   );
 }
 
-interface SpriteAreaProps {
-  player: Pokemon & { flash?: boolean };
-  enemy: Pokemon & { flash?: boolean };
-}
-
-function SpriteArea({ player, enemy }: SpriteAreaProps) {
-  const getPath = (mon: Pokemon, side: 'front' | 'back') => {
-    const folder = mon.isShiny ? 'shiny' : 'normal';
+function SpriteArea({ player, enemy, hitTarget }: { player: BattlePokemon; enemy: BattlePokemon; hitTarget: string | null }) {
+  const getPath = (mon: BattlePokemon, side: 'front' | 'back') => {
+    const folder = 'normal';
     return `/sprites/${folder}/${mon.id}_${side}.png`;
   };
 
   return (
     <div style={{ flex: 1, position: "relative", width: '100%', height: '100%' }}>
-      {/* GROUND LINE */}
       <div className="ground-line" />
 
-      {/* Enemy Sprite */}
-      <div className="sprite-enemy">
-        <img 
-          key={`enemy-${enemy.id}`}
-          src={getPath(enemy, 'front')} 
-          alt={enemy.name} 
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+      <div className={`sprite-enemy ${hitTarget === "enemy" ? "hit-flash" : ""}`}>
+        <img
+          src={getPath(enemy, 'front')}
+          alt={enemy.name}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       </div>
 
-      {/* Player Sprite */}
-      <div className="sprite-player">
-        <img 
-          key={`player-${player.id}`}
-          src={getPath(player, 'back')} 
-          alt={player.name} 
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+      <div className={`sprite-player ${hitTarget === "player" ? "hit-flash" : ""}`}>
+        <img
+          src={getPath(player, 'back')}
+          alt={player.name}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       </div>
     </div>
   );
 }
 
-interface MoveButtonProps {
-  move: Move;
-  onClick: (move: Move) => void;
-}
-
-function MoveButton({ move, onClick }: MoveButtonProps): React.ReactElement {
+function MoveButton({ move, onClick }: { move: Move; onClick: (move: Move) => void }): React.ReactElement {
   const noPp = move.pp === 0;
   return (
     <button
@@ -291,76 +158,67 @@ function MoveButton({ move, onClick }: MoveButtonProps): React.ReactElement {
           {move.power ? `PWR ${move.power}` : "STATUS"}
         </span>
         <span className={`move-button-pp ${move.pp <= 3 ? "low-pp" : ""}`}>
-          PP {move.pp}/{move.maxPp}
+          PP {move.pp}/{move.ppMax}
         </span>
       </div>
     </button>
   );
 }
 
-interface CombatLogProps {
-  entries: string[];
-}
-
-function CombatLog({ entries }: CombatLogProps): React.ReactElement {
+function CombatLog({ entries }: { entries: TurnLogEntry[] }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
   }, [entries]);
+
   return (
     <div ref={ref} className="combat-log" style={{ padding: "8px 10px", height: "100%" }}>
-      {entries.map((line, i) => (
+      {entries.map((entry, i) => (
         <div
           key={i}
           className={i === entries.length - 1 ? "log-line-new" : ""}
           style={{ paddingBottom: 2 }}
         >
           <span style={{ color: "#3C1518", marginRight: 6 }}>›</span>
-          {line}
+          {entry.message}
         </div>
       ))}
     </div>
   );
 }
 
-interface PartyRosterProps {
-  party: PartyMember[];
+function PartyRoster({ party, activeIndex, onSwitch }: {
+  party: BattlePokemon[];
+  activeIndex: number;
   onSwitch: (idx: number) => void;
-}
-
-function PartyRoster({ party, onSwitch }: PartyRosterProps): React.ReactElement {
+}): React.ReactElement {
   return (
     <div className="party-roster">
       {party.map((mon, i) => {
-        const fainted = mon.hp === 0;
+        const fainted = mon.currentHp === 0;
+        const isActive = i === activeIndex;
         return (
           <div
             key={i}
-            className={`party-slot ${mon.active ? "active" : ""} ${fainted ? "fainted" : ""}`}
-            onClick={() => !fainted && !mon.active && onSwitch(i)}
+            className={`party-slot ${isActive ? "active" : ""} ${fainted ? "fainted" : ""}`}
+            onClick={() => !fainted && !isActive && onSwitch(i)}
             style={{ padding: "6px 8px", borderRadius: 3 }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-              <span style={{ fontSize: "1.2rem" }}>{mon.sprite}</span>
+              <span style={{ fontSize: "1.2rem" }}>🐾</span>
               <div style={{ textAlign: "right" }}>
-                <div className={`party-slot-name ${mon.active ? "active" : ""}`}>
-                  {mon.name}
-                </div>
-                <div className="party-slot-level">
-                  Lv.{mon.level}
-                </div>
+                <div className={`party-slot-name ${isActive ? "active" : ""}`}>{mon.name}</div>
+                <div className="party-slot-level">Lv.{mon.level}</div>
               </div>
             </div>
-            <HpBar current={mon.hp} max={mon.maxHp} size="sm" />
+            <HpBar current={mon.currentHp} max={mon.stats.hp} size="sm" />
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-              <TypeBadge type={mon.type1} />
+              <TypeBadge type={mon.types[0]} />
               {fainted
                 ? <span className="party-slot-fainted">FNT</span>
-                : mon.active
+                : isActive
                   ? <span className="party-slot-out">OUT</span>
-                  : <span className="party-slot-hp">
-                      {mon.hp}/{mon.maxHp}
-                    </span>
+                  : <span className="party-slot-hp">{mon.currentHp}/{mon.stats.hp}</span>
               }
             </div>
           </div>
@@ -370,142 +228,98 @@ function PartyRoster({ party, onSwitch }: PartyRosterProps): React.ReactElement 
   );
 }
 
-// ─── MAIN BATTLE SCREEN ───────────────────────────────────────────────────────
 interface BattleScreenProps {
   onExitRun: () => void;
 }
 
 export default function BattleScreen({ onExitRun }: BattleScreenProps): React.ReactElement {
-  const [log, setLog] = useState<string[]>(MOCK_LOG);
-  const [player, setPlayer] = useState<Pokemon>(MOCK_PLAYER);
-  const [enemy, setEnemy] = useState<Pokemon>(MOCK_ENEMY);
-  const [party, setParty] = useState<PartyMember[]>(MOCK_PARTY);
-  const [moves] = useState<Move[]>(MOCK_MOVES);
-  const [activeTab, setActiveTab] = useState<"fight" | "party" | "items">("fight");
+  const [floor, setFloor] = useState(1);
+  const [gold, setGold] = useState(0);
+  const [kills, setKills] = useState(0);
   const [hitTarget, setHitTarget] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"fight" | "party" | "items">("fight");
 
-// ─── WEB3 LOGIC ───────────────────────────────────────────────────────────
+  const playerMon = buildPokemon("charmander", 10 + floor);
+  const enemyMon = buildRandomEnemy(floor);
+
+  const { state, selectMove } = useBattleEngine(playerMon, enemyMon);
+  const { log, player, enemy } = state;
+
   const { address } = useAccount();
   const { writeContract, isPending, isSuccess } = useWriteContract();
 
-  const handleSettleRun = () => {
-    if (!address) {
-      addLog("Error: No wallet connected!");
-      return;
-    }
+  const handleMoveClick = (move: Move) => {
+    const moveIndex = player.moves.findIndex(m => m.name === move.name);
+    if (moveIndex >= 0) {
+      setHitTarget(enemy.currentHp > 0 ? "enemy" : "player");
+      setTimeout(() => setHitTarget(null), 800);
+      selectMove(moveIndex);
 
-    addLog("Transmitting run data to the blockchain...");
+      if (state.phase === "idle" && enemy.currentHp <= 0) {
+        setKills(k => k + 1);
+        setGold(g => g + 20 + floor * 5);
+        setTimeout(() => {
+          setFloor(f => f + 1);
+        }, 1500);
+      }
+    }
+  };
+
+  const handleSwitch = (_idx: number) => {
+    setActiveTab("fight");
+  };
+
+  const handleSettleRun = () => {
+    if (!address) return;
 
     writeContract({
-          address: CONTRACT_ADDRESSES.gameSettler as `0x${string}`,
-          abi: CONTRACT_ABIS.gameSettler,
-          functionName: 'settleRun',
-          args: [
-            address,                  
-            parseEther("500"),        
-            true,                     
-            parseEther("0"),          
-            [                         
-              {                        
-                speciesId: 4,         
-                level: 5,
-                ivs: [31, 31, 31, 31, 31, 31],
-                heldItemIds: []
-              }
-            ]
-          ]
-        }, {
-          onSuccess: () => {
-            addLog("SUCCESS: $RELIC and NFT Minted!");
-            addLog("Returning to menu...");
-            // Auto-redirect after 2.5 seconds
-            setTimeout(() => {
-              onExitRun();
-            }, 2500);
-          },
-          onError: (err) => addLog(`TX FAILED: ${err.message.split('\n')[0]}`)
-        });
-  };
-  // ──────────────────────────────────────────────────────────────────────────
-  const addLog = (line: string): void => {
-    setLog(prev => [...prev.slice(-40), line]);
-  };
-
-  const handleMove = (move: Move): void => {
-    const dmg = move.power ? Math.floor(move.power * (0.7 + Math.random() * 0.6)) : 0;
-
-    setHitTarget("enemy");
-    setTimeout(() => setHitTarget(null), 800);
-
-    if (dmg > 0) {
-      setEnemy(prev => ({ ...prev, hp: Math.max(0, prev.hp - dmg) }));
-      addLog(`${player.name} used ${move.name}!`);
-      addLog(`${enemy.name} lost ${dmg} HP.`);
-    } else {
-      addLog(`${player.name} used ${move.name}!`);
-      addLog(`${player.name} restored some HP.`);
-    }
-
-    // Enemy counter
-    setTimeout(() => {
-      const eDmg = Math.floor(20 + Math.random() * 40);
-      setHitTarget("player");
-      setTimeout(() => setHitTarget(null), 800);
-      setPlayer(prev => ({ ...prev, hp: Math.max(0, prev.hp - eDmg) }));
-      addLog(`${enemy.name} used Hydro Pump!`);
-      addLog(`${player.name} lost ${eDmg} HP.`);
-    }, 900);
-  };
-
-  const handleSwitch = (idx: number): void => {
-    const mon = party[idx];
-    setParty(prev => prev.map((p, i) => ({ ...p, active: i === idx })));
-    setPlayer({ ...mon, hp: mon.hp, maxHp: mon.maxHp });
-    addLog(`Come back, ${player.name}!`);
-    addLog(`Go! ${mon.name}!`);
-    setActiveTab("fight");
+      address: CONTRACT_ADDRESSES.gameSettler as `0x${string}`,
+      abi: CONTRACT_ABIS.gameSettler,
+      functionName: 'settleRun',
+      args: [
+        address,
+        parseEther(String(gold * 2)),
+        false,
+        parseEther("0"),
+        []
+      ]
+    } as any, {
+      onSuccess: () => {
+        setTimeout(() => onExitRun(), 2500);
+      },
+      onError: (_err: Error) => { }
+    });
   };
 
   return (
     <div className="outer-texture">
       <div className="outer-container">
-        {/* ── TOP STATUS BAR ── */}
-        <RunStatusBar floor={3} gold={420} kills={7} />
+        <RunStatusBar floor={floor} gold={gold} kills={kills} />
 
-        {/* ── MAIN CONTENT (theater + hud) ── */}
         <div className="main-content">
-
-          {/* ── 16:9 BATTLE THEATER ── */}
           <div className="theater-container">
             <div className="theater-rim scanlines phosphor-vignette theater-bg">
-              {/* enemy hp block — top-left */}
               <div style={{ position: "absolute", top: 16, left: 16, zIndex: 20 }}>
                 <TheaterHpBlock pokemon={enemy} isEnemy={true} />
               </div>
 
-              {/* player hp block — bottom-right */}
               <div style={{ position: "absolute", bottom: 16, right: 16, zIndex: 20 }}>
                 <TheaterHpBlock pokemon={player} isEnemy={false} />
               </div>
 
-              {/* sprites */}
-              <SpriteArea player={{ ...player, flash: hitTarget === "player" }} enemy={{ ...enemy, flash: hitTarget === "enemy" }} />
+              <SpriteArea player={player} enemy={enemy} hitTarget={hitTarget} />
 
-              {/* theater corner decorations */}
               {[["0","0"], ["0","auto"], ["auto","0"], ["auto","auto"]].map((_, i) => (
                 <div key={i} className={`theater-corner theater-corner-${i}`} />
               ))}
 
-              {/* floor indicator */}
               <div className="theater-floor-indicator">
-                — FLOOR 3 · BOSS —
+                — FLOOR {floor} —
               </div>
             </div>
           </div>
 
-          {/* ── BOTTOM HUD ── */}
           <div className="hud-panel">
-            {/* tab row */}
             <div className="hud-tab-row">
               {(["fight", "party", "items"] as const).map(tab => (
                 <button
@@ -517,14 +331,10 @@ export default function BattleScreen({ onExitRun }: BattleScreenProps): React.Re
                 </button>
               ))}
               <div style={{ flex: 1 }} />
-              <span className="turn-counter">
-                TURN 12
-              </span>
+              <span className="turn-counter">TURN {state.turn}</span>
             </div>
 
-            {/* main hud content */}
             <div className="hud-content">
-              {/* LEFT: combat log */}
               <div className="hud-left">
                 <div className="hud-left-header">
                   <span className="stat-label">COMBAT LOG</span>
@@ -532,64 +342,60 @@ export default function BattleScreen({ onExitRun }: BattleScreenProps): React.Re
                 <CombatLog entries={log} />
               </div>
 
-              {/* RIGHT: active panel */}
               <div className="hud-right">
                 {activeTab === "fight" && (
                   <div className="moves-grid">
-                    {moves.map((move, i) => (
-                      <MoveButton key={i} move={move} onClick={handleMove} />
+                    {player.moves.map((move, i) => (
+                      <MoveButton key={i} move={move} onClick={handleMoveClick} />
                     ))}
                   </div>
                 )}
 
                 {activeTab === "party" && (
-                  <PartyRoster party={party} onSwitch={handleSwitch} />
+                  <PartyRoster
+                    party={[player]}
+                    activeIndex={0}
+                    onSwitch={handleSwitch}
+                  />
                 )}
 
                 {activeTab === "items" && (
                   <div className="items-panel">
-                    <span className="items-empty">
-                      NO ITEMS IN INVENTORY
-                    </span>
-                    <span className="items-description">
-                      Visit the shop between floors to acquire items.
-                    </span>
+                    <span className="items-empty">NO ITEMS IN INVENTORY</span>
+                    <span className="items-description">Visit the shop between floors to acquire items.</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* HUD footer strip */}
             <div className="hud-footer">
               <div style={{ display: "flex", gap: 12 }}>
-                <span className="stat-label">ATK <span style={{ color: "#e8d5a3" }}>84</span></span>
-                <span className="stat-label">DEF <span style={{ color: "#e8d5a3" }}>67</span></span>
-                <span className="stat-label">SPD <span style={{ color: "#e8d5a3" }}>100</span></span>
+                <span className="stat-label">ATK <span style={{ color: "#e8d5a3" }}>{player.stats.atk}</span></span>
+                <span className="stat-label">DEF <span style={{ color: "#e8d5a3" }}>{player.stats.def}</span></span>
+                <span className="stat-label">SPD <span style={{ color: "#e8d5a3" }}>{player.stats.spe}</span></span>
               </div>
-                <button className="flee-button"
-                  onClick={handleSettleRun}
-                  disabled={isPending || isSuccess}
-                  onMouseEnter={e => {
-                    if (isPending || isSuccess) return;
-                    const target = e.currentTarget;
-                    target.style.boxShadow = "0 0 10px rgba(105,20,14,0.6)";
-                    target.style.color = "#fff";
-                  }}
-                  onMouseLeave={e => {
-                    if (isPending || isSuccess) return;
-                    const target = e.currentTarget;
-                    target.style.boxShadow = "none";
-                    target.style.color = "#e8d5a3";
-                  }}
-                  style={{ opacity: (isPending || isSuccess) ? 0.5 : 1, cursor: (isPending || isSuccess) ? "not-allowed" : "pointer" }}
-                >
-                  {isPending ? "SETTLING..." : isSuccess ? "SUCCESS!" : "SETTLE RUN ON-CHAIN"}
-                </button>
+              <button
+                className="flee-button"
+                onClick={handleSettleRun}
+                disabled={isPending || isSuccess}
+                onMouseEnter={e => {
+                  if (isPending || isSuccess) return;
+                  e.currentTarget.style.boxShadow = "0 0 10px rgba(105,20,14,0.6)";
+                  e.currentTarget.style.color = "#fff";
+                }}
+                onMouseLeave={e => {
+                  if (isPending || isSuccess) return;
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.color = "#e8d5a3";
+                }}
+                style={{ opacity: (isPending || isSuccess) ? 0.5 : 1, cursor: (isPending || isSuccess) ? "not-allowed" : "pointer" }}
+              >
+                {isPending ? "SETTLING..." : isSuccess ? "SUCCESS!" : "SETTLE RUN ON-CHAIN"}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* tiny footer */}
         <div className="app-footer">
           ROGUELITE BATTLE CLIENT · RESULTS SETTLED ON-CHAIN AT RUN END
         </div>

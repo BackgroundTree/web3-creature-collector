@@ -3,14 +3,51 @@
 @tailwind utilities;
 
 @layer base {
-  /* Pixel font — after adding the <link> to index.html */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body, #root {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+  }
+
   body {
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Rajdhani', sans-serif;
+    background: #020001;
+    color: #e8d5a3;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  ::selection {
+    background: #69140E;
+    color: #e8d5a3;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #050001;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3C1518;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #69140E;
   }
 }
 
 @layer utilities {
-  /* Referenced in BattleUI.tsx but never defined */
   .pixel-border {
     image-rendering: pixelated;
   }
