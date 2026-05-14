@@ -1,9 +1,17 @@
 import { http, createConfig } from 'wagmi';
-import { hardhat } from 'wagmi/chains';
+import { hardhat, mainnet, sepolia } from 'wagmi/chains';
+import { injected } from 'wagmi/connectors';
 
 export const config = createConfig({
-  chains: [hardhat], // Tell Wagmi to look for our local node
+  chains: [hardhat, mainnet, sepolia],
+  connectors: [
+    injected({
+      shimDisconnect: true,
+    }),
+  ],
   transports: {
-    [hardhat.id]: http('http://127.0.0.1:8545'), // Hardhat's default port
+    [hardhat.id]: http(),
+    [mainnet.id]: http(),
+    [sepolia.id]: http(),
   },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { usePC } from './hooks/usePC.ts';
 
 interface PCStorageProps {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import BattleScreen from './Battlescreen.tsx';
+import BattleScreen from './BattleScreen.tsx';
 import MainMenu from './MainMenu.tsx';
 import PCstorage from './PCstorage.tsx';
 import './App.css'; 
