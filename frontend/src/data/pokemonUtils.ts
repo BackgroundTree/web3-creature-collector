@@ -1,4 +1,4 @@
-import type { Pokemon as BattlePokemon, ElementType, BaseStats, Move, StatName } from '../types';
+import type { Pokemon as BattlePokemon, Difficulty, ElementType, BaseStats, Move, StatName } from '../types';
 import POKEMON_DATA from './pokemon.json';
 import MOVES_DATA from './moves.json';
 
@@ -123,16 +123,95 @@ export function buildPokemon(
     currentHp: stats.hp,
     moves: getMovesForLevel(data.moves, level),
     tokenId: undefined,
+    speciesKey,
+    xp: 0,
+    natureSeed: seed,
   };
 }
 
-export function buildRandomEnemy(floor: number): BattlePokemon {
+export const XP_PER_LEVEL = 10;
+
+export function xpThreshold(level: number): number {
+  return level * XP_PER_LEVEL;
+}
+
+export function addXpAndLevelUp(pokemon: BattlePokemon, xpGain: number): BattlePokemon {
+  const currentXp = (pokemon.xp || 0) + xpGain;
+  let remainingXp = currentXp;
+  let newLevel = pokemon.level;
+
+  while (remainingXp >= xpThreshold(newLevel)) {
+    remainingXp -= xpThreshold(newLevel);
+    newLevel++;
+  }
+
+  if (newLevel === pokemon.level) {
+    return { ...pokemon, xp: currentXp };
+  }
+
+  const seed = pokemon.natureSeed ?? 0;
+  const newStats = calcStats(pokemon.baseStats, newLevel, seed);
+
+  let moves = pokemon.moves;
+  if (pokemon.speciesKey) {
+    const data = getPokemonData(pokemon.speciesKey);
+    if (data) {
+      const learnedMoves = getMovesForLevel(data.moves, newLevel);
+      const newMoves: Move[] = [];
+      for (const lm of learnedMoves) {
+        if (moves.length + newMoves.length >= 4) break;
+        if (!moves.some(m => m.name === lm.name) && !newMoves.some(m => m.name === lm.name)) {
+          newMoves.push(lm);
+        }
+      }
+      moves = [...moves, ...newMoves];
+    }
+  }
+
+  return {
+    ...pokemon,
+    level: newLevel,
+    stats: newStats,
+    currentHp: Math.min(newStats.hp, pokemon.currentHp),
+    moves,
+    xp: remainingXp,
+    natureSeed: seed,
+  };
+}
+
+function difficultyMultiplier(difficulty: Difficulty): number {
+  switch (difficulty) {
+    case "easy":   return 0.75;
+    case "normal": return 1.0;
+    case "hard":   return 1.35;
+  }
+}
+
+function difficultyLevel(floor: number, difficulty: Difficulty): number {
+  switch (difficulty) {
+    case "easy":   return Math.min(100, Math.floor(3 + floor * 1.25 + Math.random() * 3));
+    case "normal": return Math.min(100, Math.floor(5 + floor * 2.5  + Math.random() * 5));
+    case "hard":   return Math.min(100, Math.floor(8 + floor * 3.5  + Math.random() * 5));
+  }
+}
+
+export function buildRandomEnemy(floor: number, difficulty: Difficulty = "normal"): BattlePokemon {
   const keys = Object.keys(POKEMON_DATA as Record<string, PokemonData>);
   const randomKey = keys[Math.floor(Math.random() * keys.length)];
   const data = (POKEMON_DATA as Record<string, PokemonData>)[randomKey];
-  const level = Math.min(100, Math.floor(5 + floor * 2.5 + Math.random() * 5));
+  const level = difficultyLevel(floor, difficulty);
+  const mult = difficultyMultiplier(difficulty);
+  const seed = Math.floor(Math.random() * NATURE_MODS.length);
   const mapped = mapBaseStats(data.baseStats);
-  const stats = calcStats(mapped, level, Math.floor(Math.random() * NATURE_MODS.length));
+  const raw = calcStats(mapped, level, seed);
+  const stats: BaseStats = {
+    hp:  Math.floor(raw.hp  * mult),
+    atk: Math.floor(raw.atk * mult),
+    def: Math.floor(raw.def * mult),
+    spa: Math.floor(raw.spa * mult),
+    spd: Math.floor(raw.spd * mult),
+    spe: Math.floor(raw.spe * mult),
+  };
 
   return {
     id: data.id,
@@ -144,6 +223,8 @@ export function buildRandomEnemy(floor: number): BattlePokemon {
     currentHp: stats.hp,
     moves: getMovesForLevel(data.moves, level),
     tokenId: undefined,
+    speciesKey: randomKey,
+    natureSeed: seed,
   };
 }
 
@@ -156,3 +237,34 @@ export function buildStarterParty(): BattlePokemon[] {
 }
 
 export const POKEMON_KEYS = Object.keys(POKEMON_DATA as Record<string, PokemonData>);
+
+export function getPokemonDisplayData(key: string): { id: number; name: string; types: string[]; emoji: string } | null {
+  const data = getPokemonData(key);
+  if (!data) return null;
+  const emojiMap: Record<string, string> = {
+    bulbasaur: "🌱", ivysaur: "🌿", charmander: "🔥", charmeleon: "🔥",
+    squirtle: "💧", wartortle: "💧", caterpie: "🐛", metapod: "🫘",
+    butterfree: "🦋", weedle: "🐛", kakuna: "🫘", beedrill: "🐝",
+    pidgey: "🐦", pidgeotto: "🦅", rattata: "🐭", raticate: "🐭",
+    ekans: "🐍", arbok: "🐍", pikachu: "⚡", raichu: "⚡",
+    nidoran_m: "🦔", nidorino: "🦔", nidoking: "👑",
+    vulpix: "🦊", ninetales: "🦊",
+    sandshrew: "🦔", sandslash: "🦔",
+    mankey: "🐵", primeape: "🐵",
+    abra: "🔮", kadabra: "🔮",
+    geodude: "🪨", graveler: "🪨",
+    gastly: "👻", haunter: "👻", gengar: "😈",
+    eevee: "💫", snorlax: "💤",
+    growlithe: "🐕", arcanine: "🐕‍🔥",
+    dratini: "🐉", dragonair: "🐉", dragonite: "🐲",
+    magikarp: "🐟", gyarados: "🐍",
+    machop: "💪", machoke: "💪", machamp: "💪",
+    psyduck: "🦆", farfetchd: "🥬", quaxly: "🦆", ducklett: "🦆",
+  };
+  return {
+    id: data.id,
+    name: data.name,
+    types: data.types,
+    emoji: emojiMap[key] || "❓",
+  };
+}

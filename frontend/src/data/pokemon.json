@@ -730,5 +730,254 @@
       "1": ["tackle", "defense_curl", "mud_sport", "rock_polish", "rollout", "magnitude", "rock_throw", "smack_down", "bulldoze", "self_destruct"]
     },
     "evolution": null
+  },
+  "gastly": {
+    "id": 92,
+    "name": "Gastly",
+    "types": ["Ghost", "Poison"],
+    "baseStats": { "hp": 30, "atk": 35, "def": 30, "spAtk": 100, "spDef": 35, "spd": 80 },
+    "moves": {
+      "1": ["confusion", "spite"],
+      "8": ["smokescreen"],
+      "12": ["confuse_ray"],
+      "16": ["supersonic"],
+      "20": ["taunt"]
+    },
+    "evolution": { "method": "level", "level": 25, "evolvesTo": "haunter" }
+  },
+  "haunter": {
+    "id": 93,
+    "name": "Haunter",
+    "types": ["Ghost", "Poison"],
+    "baseStats": { "hp": 45, "atk": 50, "def": 45, "spAtk": 115, "spDef": 55, "spd": 95 },
+    "moves": {
+      "1": ["confusion", "spite", "smokescreen", "confuse_ray"],
+      "25": ["supersonic"],
+      "30": ["taunt"],
+      "35": ["shadow_ball"]
+    },
+    "evolution": { "method": "level", "level": 40, "evolvesTo": "gengar" }
+  },
+  "gengar": {
+    "id": 94,
+    "name": "Gengar",
+    "types": ["Ghost", "Poison"],
+    "baseStats": { "hp": 60, "atk": 65, "def": 60, "spAtk": 130, "spDef": 75, "spd": 110 },
+    "moves": {
+      "1": ["confusion", "spite", "smokescreen", "confuse_ray", "supersonic", "taunt", "shadow_ball"]
+    },
+    "evolution": null
+  },
+  "eevee": {
+    "id": 133,
+    "name": "Eevee",
+    "types": ["Normal"],
+    "baseStats": { "hp": 55, "atk": 55, "def": 50, "spAtk": 45, "spDef": 65, "spd": 55 },
+    "moves": {
+      "1": ["tackle", "growl"],
+      "5": ["sand_attack"],
+      "10": ["quick_attack"],
+      "15": ["bite"],
+      "20": ["swift"],
+      "25": ["take_down"]
+    },
+    "evolution": null
+  },
+  "snorlax": {
+    "id": 143,
+    "name": "Snorlax",
+    "types": ["Normal"],
+    "baseStats": { "hp": 160, "atk": 110, "def": 65, "spAtk": 65, "spDef": 110, "spd": 30 },
+    "moves": {
+      "1": ["tackle", "defense_curl"],
+      "6": ["scratch"],
+      "10": ["bite"],
+      "15": ["rollout"],
+      "20": ["crunch"],
+      "25": ["take_down"]
+    },
+    "evolution": null
+  },
+  "growlithe": {
+    "id": 58,
+    "name": "Growlithe",
+    "types": ["Fire"],
+    "baseStats": { "hp": 55, "atk": 70, "def": 45, "spAtk": 70, "spDef": 50, "spd": 60 },
+    "moves": {
+      "1": ["leer", "ember"],
+      "6": ["bite"],
+      "10": ["incinerate"],
+      "14": ["fire_fang"],
+      "18": ["flamethrower"],
+      "22": ["take_down"]
+    },
+    "evolution": { "method": "item", "item": "fire_stone", "evolvesTo": "arcanine" }
+  },
+  "arcanine": {
+    "id": 59,
+    "name": "Arcanine",
+    "types": ["Fire"],
+    "baseStats": { "hp": 90, "atk": 110, "def": 80, "spAtk": 100, "spDef": 80, "spd": 95 },
+    "moves": {
+      "1": ["leer", "ember", "bite", "incinerate", "fire_fang", "flamethrower", "take_down"]
+    },
+    "evolution": null
+  },
+  "dratini": {
+    "id": 147,
+    "name": "Dratini",
+    "types": ["Dragon"],
+    "baseStats": { "hp": 41, "atk": 64, "def": 45, "spAtk": 50, "spDef": 50, "spd": 50 },
+    "moves": {
+      "1": ["leer", "twister"],
+      "5": ["thunder_wave"],
+      "10": ["dragon_breath"],
+      "15": ["quick_attack"],
+      "20": ["water_pulse"],
+      "25": ["agility"]
+    },
+    "evolution": { "method": "level", "level": 30, "evolvesTo": "dragonair" }
+  },
+  "dragonair": {
+    "id": 148,
+    "name": "Dragonair",
+    "types": ["Dragon"],
+    "baseStats": { "hp": 61, "atk": 84, "def": 65, "spAtk": 70, "spDef": 70, "spd": 70 },
+    "moves": {
+      "1": ["leer", "twister", "thunder_wave", "dragon_breath"],
+      "30": ["quick_attack"],
+      "35": ["water_pulse"],
+      "40": ["agility"]
+    },
+    "evolution": { "method": "level", "level": 55, "evolvesTo": "dragonite" }
+  },
+  "dragonite": {
+    "id": 149,
+    "name": "Dragonite",
+    "types": ["Dragon", "Flying"],
+    "baseStats": { "hp": 91, "atk": 134, "def": 95, "spAtk": 100, "spDef": 100, "spd": 80 },
+    "moves": {
+      "1": ["leer", "twister", "thunder_wave", "dragon_breath", "quick_attack", "wing_attack", "agility", "water_pulse"]
+    },
+    "evolution": null
+  },
+  "magikarp": {
+    "id": 129,
+    "name": "Magikarp",
+    "types": ["Water"],
+    "baseStats": { "hp": 20, "atk": 10, "def": 55, "spAtk": 15, "spDef": 20, "spd": 80 },
+    "moves": {
+      "1": ["tackle"],
+      "15": ["water_pulse"]
+    },
+    "evolution": { "method": "level", "level": 20, "evolvesTo": "gyarados" }
+  },
+  "gyarados": {
+    "id": 130,
+    "name": "Gyarados",
+    "types": ["Water", "Flying"],
+    "baseStats": { "hp": 95, "atk": 125, "def": 79, "spAtk": 60, "spDef": 100, "spd": 81 },
+    "moves": {
+      "1": ["tackle", "bite", "water_pulse", "dragon_breath", "leer", "twister"],
+      "21": ["crunch"],
+      "26": ["aqua_tail"],
+      "32": ["flamethrower"]
+    },
+    "evolution": null
+  },
+  "machop": {
+    "id": 66,
+    "name": "Machop",
+    "types": ["Fighting"],
+    "baseStats": { "hp": 70, "atk": 80, "def": 50, "spAtk": 35, "spDef": 35, "spd": 35 },
+    "moves": {
+      "1": ["scratch", "leer"],
+      "5": ["karate_chop"],
+      "10": ["seismic_toss"],
+      "15": ["focus_energy"],
+      "20": ["fling"]
+    },
+    "evolution": { "method": "level", "level": 28, "evolvesTo": "machoke" }
+  },
+  "machoke": {
+    "id": 67,
+    "name": "Machoke",
+    "types": ["Fighting"],
+    "baseStats": { "hp": 80, "atk": 100, "def": 70, "spAtk": 50, "spDef": 60, "spd": 45 },
+    "moves": {
+      "1": ["scratch", "leer", "karate_chop", "seismic_toss", "focus_energy"],
+      "22": ["fling"]
+    },
+    "evolution": { "method": "level", "level": 40, "evolvesTo": "machamp" }
+  },
+  "machamp": {
+    "id": 68,
+    "name": "Machamp",
+    "types": ["Fighting"],
+    "baseStats": { "hp": 90, "atk": 130, "def": 80, "spAtk": 65, "spDef": 85, "spd": 55 },
+    "moves": {
+      "1": ["scratch", "leer", "karate_chop", "seismic_toss", "focus_energy", "fling"]
+    },
+    "evolution": null
+  },
+  "psyduck": {
+    "id": 54,
+    "name": "Psyduck",
+    "types": ["Water"],
+    "baseStats": { "hp": 50, "atk": 52, "def": 48, "spAtk": 65, "spDef": 50, "spd": 55 },
+    "moves": {
+      "1": ["scratch", "tail_whip"],
+      "5": ["water_gun"],
+      "9": ["confusion"],
+      "14": ["fury_swipes"],
+      "18": ["water_pulse"],
+      "22": ["scratch"]
+    },
+    "evolution": null
+  },
+  "farfetchd": {
+    "id": 83,
+    "name": "Farfetch'd",
+    "types": ["Normal", "Flying"],
+    "baseStats": { "hp": 52, "atk": 90, "def": 55, "spAtk": 58, "spDef": 62, "spd": 60 },
+    "moves": {
+      "1": ["peck", "sand_attack"],
+      "6": ["leer"],
+      "10": ["fury_swipes"],
+      "15": ["air_slash"],
+      "20": ["slash"],
+      "25": ["agility"]
+    },
+    "evolution": null
+  },
+  "quaxly": {
+    "id": 912,
+    "name": "Quaxly",
+    "types": ["Water"],
+    "baseStats": { "hp": 55, "atk": 65, "def": 45, "spAtk": 50, "spDef": 45, "spd": 50 },
+    "moves": {
+      "1": ["tackle", "growl"],
+      "5": ["water_gun"],
+      "9": ["quick_attack"],
+      "13": ["wing_attack"],
+      "17": ["water_pulse"],
+      "21": ["aqua_tail"]
+    },
+    "evolution": null
+  },
+  "ducklett": {
+    "id": 580,
+    "name": "Ducklett",
+    "types": ["Water", "Flying"],
+    "baseStats": { "hp": 62, "atk": 44, "def": 50, "spAtk": 44, "spDef": 50, "spd": 55 },
+    "moves": {
+      "1": ["water_gun", "gust"],
+      "6": ["quick_attack"],
+      "10": ["wing_attack"],
+      "15": ["water_pulse"],
+      "20": ["aqua_tail"],
+      "25": ["air_slash"]
+    },
+    "evolution": null
   }
 }

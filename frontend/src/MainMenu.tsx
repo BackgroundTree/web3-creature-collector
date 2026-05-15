@@ -19,7 +19,7 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
   const { disconnect } = useDisconnect();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
-  const balance = useReadContract({
+  const { data: balance, isFetching: balanceLoading } = useReadContract({
     address: CONTRACT_ADDRESSES.relicCoin as `0x${string}`,
     abi: CONTRACT_ABIS.relicCoin,
     functionName: 'balanceOf',
@@ -27,7 +27,7 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
     query: { enabled: !!address }
   });
 
-  const formattedBalance = balance.data ? formatEther(balance.data as bigint) : "0";
+  const formattedBalance = balance ? formatEther(balance as bigint) : null;
   const walletConnectors = connectors.filter(c =>
     c.id === 'injected' || c.name.toLowerCase().includes('meta')
   );
@@ -44,6 +44,9 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
       overflow: "hidden",
       padding: "20px"
     }}>
+      {/* Load fonts via link tag for reliability */}
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+
       {/* Animated background orbs */}
       <div style={{
         position: "absolute", top: "-20%", left: "-10%", width: "500px", height: "500px",
@@ -67,7 +70,6 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
         }
       `}</style>
 
-      {/* Logo */}
       <div style={{
         fontFamily: "'Bebas Neue', sans-serif",
         fontSize: "clamp(2rem, 6vw, 3.5rem)",
@@ -189,7 +191,6 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
         </div>
       ) : (
         <div style={{ textAlign: "center", width: "100%", maxWidth: "400px" }}>
-          {/* Wallet status */}
           <div style={{
             padding: "16px 24px",
             background: "rgba(10,0,2,0.9)",
@@ -211,7 +212,6 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
             </p>
           </div>
 
-          {/* Treasury */}
           <div style={{
             padding: "20px 32px",
             background: "rgba(10,0,2,0.9)",
@@ -232,11 +232,14 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
               color: "#e8d5a3",
               letterSpacing: "0.05em"
             }}>
-              {formattedBalance} <span style={{ color: "#69140E", fontSize: "1rem" }}>$RELIC</span>
+              {balanceLoading ? (
+                <span style={{ color: "#9a8a6a", fontSize: "1rem" }}>LOADING...</span>
+              ) : (
+                <>{formattedBalance || "0"} <span style={{ color: "#69140E", fontSize: "1rem" }}>$RELIC</span></>
+              )}
             </div>
           </div>
 
-          {/* Action buttons */}
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             <button
               onClick={onStartRun}
@@ -306,7 +309,6 @@ export default function MainMenu({ onStartRun, onOpenPC }: MainMenuProps) {
         </div>
       )}
 
-      {/* Footer */}
       <div style={{
         position: "absolute", bottom: "20px",
         fontFamily: "'Share Tech Mono', monospace",

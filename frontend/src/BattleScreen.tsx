@@ -1,11 +1,8 @@
 import './BattleScreen.css';
-import React, { useState, useEffect, useRef } from "react";
-import { useAccount, useWriteContract } from 'wagmi';
-import { parseEther } from 'viem';
-import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from './contracts/config';
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useBattleEngine } from './hooks/useBattleEngine';
-import { buildPokemon, buildRandomEnemy } from './data/pokemonUtils';
-import type { Pokemon as BattlePokemon, Move, TurnLogEntry } from './types';
+import { buildRandomEnemy, addXpAndLevelUp } from './data/pokemonUtils';
+import type { Pokemon, Move, RunState, InventoryItem } from './types';
 
 const TYPE_COLORS: Record<string, string> = {
   Fire: "#c95c00", Water: "#1a6fa8", Grass: "#2d7a1e", Electric: "#b09400",
@@ -33,7 +30,7 @@ function TypeBadge({ type }: { type?: string }): React.ReactElement {
 }
 
 function HpBar({ current, max, size = "md" }: { current: number; max: number; size?: "sm" | "md" }): React.ReactElement {
-  const pct = Math.max(0, Math.min(1, current / max));
+  const pct = max > 0 ? Math.max(0, Math.min(1, current / max)) : 0;
   const h = size === "sm" ? "4px" : "8px";
   return (
     <div className="hp-bar-track" style={{ height: h, width: "100%" }}>
@@ -45,32 +42,15 @@ function HpBar({ current, max, size = "md" }: { current: number; max: number; si
   );
 }
 
-function StatusBadge({ status }: { status?: string | null }): React.ReactElement | null {
-  if (!status) return null;
-  const map: Record<string, { bg: string; label: string }> = {
-    BRN: { bg: "#7a2200", label: "BRN" },
-    PAR: { bg: "#6a6400", label: "PAR" },
-    PSN: { bg: "#5a0a6a", label: "PSN" },
-    SLP: { bg: "#2a2a5a", label: "SLP" },
-    FRZ: { bg: "#1a4a6a", label: "FRZ" },
-    FNT: { bg: "#1a0000", label: "FNT" },
-  };
-  const s = map[status] || { bg: "#333", label: status };
-  return (
-    <span className="status-badge" style={{ background: s.bg, color: "#fff" }}>
-      {s.label}
-    </span>
-  );
-}
 
-function RunStatusBar({ floor, gold, kills }: { floor: number; gold: number; kills: number }): React.ReactElement {
+function RunStatusBar({ fight, maxFights, gold, kills }: { fight: number; maxFights: number; gold: number; kills: number }): React.ReactElement {
   return (
     <div className="run-status-bar">
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span className="run-status-title">◆ ROGUELITE BATTLE CLIENT ◆</span>
+        <span className="run-status-title">◆ RELIC MONSTERS ◆</span>
       </div>
       <div style={{ display: "flex", gap: 8 }}>
-        <span className="run-chip">FLOOR {floor}</span>
+        <span className="run-chip">FIGHT {fight}/{maxFights}</span>
         <span className="run-chip">⚔ {kills} KILLS</span>
         <span className="run-chip">◈ {gold} GOLD</span>
       </div>
@@ -82,26 +62,22 @@ function RunStatusBar({ floor, gold, kills }: { floor: number; gold: number; kil
   );
 }
 
-function TheaterHpBlock({ pokemon, isEnemy }: { pokemon: BattlePokemon; isEnemy: boolean }): React.ReactElement {
-  const pct = pokemon.currentHp / pokemon.stats.hp;
+function TheaterHpBlock({ pokemon, isEnemy }: { pokemon: Pokemon; isEnemy: boolean }): React.ReactElement {
+  const pct = pokemon.stats.hp > 0 ? pokemon.currentHp / pokemon.stats.hp : 0;
   return (
     <div className={`theater-hp-block ${isEnemy ? "enemy" : "player"}`}>
       <div className={`theater-hp-corner ${isEnemy ? "left" : "right"}`} />
-
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <div>
           <span className="theater-pokemon-name">{pokemon.name}</span>
           <span className="theater-pokemon-level">Lv.{pokemon.level}</span>
         </div>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-          <StatusBadge status={null} />
           <TypeBadge type={pokemon.types[0]} />
           {pokemon.types[1] && <TypeBadge type={pokemon.types[1]} />}
         </div>
       </div>
-
       <HpBar current={pokemon.currentHp} max={pokemon.stats.hp} size="md" />
-
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
         <span className="stat-label">HP</span>
         <span className="theater-hp-text" style={{ color: getHpColor(pct) }}>
@@ -112,41 +88,30 @@ function TheaterHpBlock({ pokemon, isEnemy }: { pokemon: BattlePokemon; isEnemy:
   );
 }
 
-function SpriteArea({ player, enemy, hitTarget }: { player: BattlePokemon; enemy: BattlePokemon; hitTarget: string | null }) {
-  const getPath = (mon: BattlePokemon, side: 'front' | 'back') => {
-    const folder = 'normal';
-    return `/sprites/${folder}/${mon.id}_${side}.png`;
+function SpriteArea({ player, enemy }: { player: Pokemon; enemy: Pokemon }) {
+  const getPath = (mon: Pokemon, side: 'front' | 'back') => {
+    return `/sprites/normal/${mon.id}_${side}.png`;
   };
 
   return (
     <div style={{ flex: 1, position: "relative", width: '100%', height: '100%' }}>
       <div className="ground-line" />
-
-      <div className={`sprite-enemy ${hitTarget === "enemy" ? "hit-flash" : ""}`}>
-        <img
-          src={getPath(enemy, 'front')}
-          alt={enemy.name}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        />
+      <div className="sprite-enemy">
+        <img src={getPath(enemy, 'front')} alt={enemy.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
-
-      <div className={`sprite-player ${hitTarget === "player" ? "hit-flash" : ""}`}>
-        <img
-          src={getPath(player, 'back')}
-          alt={player.name}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        />
+      <div className="sprite-player">
+        <img src={getPath(player, 'back')} alt={player.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
     </div>
   );
 }
 
-function MoveButton({ move, onClick }: { move: Move; onClick: (move: Move) => void }): React.ReactElement {
+function MoveButton({ move, onClick, disabled }: { move: Move; onClick: (move: Move) => void; disabled?: boolean }): React.ReactElement {
   const noPp = move.pp === 0;
   return (
     <button
-      className={`move-btn ${noPp ? "disabled" : ""}`}
-      onClick={() => !noPp && onClick(move)}
+      className={`move-btn ${noPp || disabled ? "disabled" : ""}`}
+      onClick={() => !noPp && !disabled && onClick(move)}
       style={{ padding: "10px 14px", textAlign: "left" }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
@@ -165,7 +130,7 @@ function MoveButton({ move, onClick }: { move: Move; onClick: (move: Move) => vo
   );
 }
 
-function CombatLog({ entries }: { entries: TurnLogEntry[] }): React.ReactElement {
+function CombatLog({ entries }: { entries: { message: string }[] }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
@@ -174,11 +139,7 @@ function CombatLog({ entries }: { entries: TurnLogEntry[] }): React.ReactElement
   return (
     <div ref={ref} className="combat-log" style={{ padding: "8px 10px", height: "100%" }}>
       {entries.map((entry, i) => (
-        <div
-          key={i}
-          className={i === entries.length - 1 ? "log-line-new" : ""}
-          style={{ paddingBottom: 2 }}
-        >
+        <div key={i} className={i === entries.length - 1 ? "log-line-new" : ""} style={{ paddingBottom: 2 }}>
           <span style={{ color: "#3C1518", marginRight: 6 }}>›</span>
           {entry.message}
         </div>
@@ -187,10 +148,11 @@ function CombatLog({ entries }: { entries: TurnLogEntry[] }): React.ReactElement
   );
 }
 
-function PartyRoster({ party, activeIndex, onSwitch }: {
-  party: BattlePokemon[];
+function PartyRoster({ party, activeIndex, onSwitch, disabled }: {
+  party: Pokemon[];
   activeIndex: number;
   onSwitch: (idx: number) => void;
+  disabled: boolean;
 }): React.ReactElement {
   return (
     <div className="party-roster">
@@ -201,8 +163,8 @@ function PartyRoster({ party, activeIndex, onSwitch }: {
           <div
             key={i}
             className={`party-slot ${isActive ? "active" : ""} ${fainted ? "fainted" : ""}`}
-            onClick={() => !fainted && !isActive && onSwitch(i)}
-            style={{ padding: "6px 8px", borderRadius: 3 }}
+            onClick={() => !fainted && !isActive && !disabled && onSwitch(i)}
+            style={{ padding: "6px 8px", borderRadius: 3, cursor: disabled ? "not-allowed" : "pointer" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
               <span style={{ fontSize: "1.2rem" }}>🐾</span>
@@ -228,93 +190,208 @@ function PartyRoster({ party, activeIndex, onSwitch }: {
   );
 }
 
-interface BattleScreenProps {
-  onExitRun: () => void;
+function InventoryPanel({ inventory, onUseItem, disabled }: {
+  inventory: InventoryItem[];
+  onUseItem: (item: InventoryItem) => void;
+  disabled: boolean;
+}): React.ReactElement {
+  const usable = inventory.filter(i => i.usableInBattle);
+  if (usable.length === 0) {
+    return (
+      <div className="items-panel">
+        <span className="items-empty">NO USABLE ITEMS</span>
+        <span className="items-description">Visit the shop between fights to stock up.</span>
+      </div>
+    );
+  }
+  return (
+    <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: "6px", height: "100%", overflowY: "auto" }}>
+      {usable.map((item) => (
+        <button
+          key={item.id}
+          className="move-btn"
+          onClick={() => !disabled && onUseItem(item)}
+          disabled={disabled}
+          style={{ padding: "8px 12px", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <div>
+            <div style={{ fontSize: "0.85rem", color: "#e8d5a3" }}>{item.name}</div>
+            <div style={{ fontSize: "0.6rem", color: "#9a8a6a", fontFamily: "'Share Tech Mono', monospace" }}>
+              {item.healAmount ? `Heals ${item.healAmount} HP` : item.ppRestore ? `Restores ${item.ppRestore} PP` : item.revivePercent ? `Revives ${item.revivePercent * 100}% HP` : ""}
+            </div>
+          </div>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#69140E" }}>×{item.count}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
-export default function BattleScreen({ onExitRun }: BattleScreenProps): React.ReactElement {
-  const [floor, setFloor] = useState(1);
-  const [gold, setGold] = useState(0);
-  const [kills, setKills] = useState(0);
-  const [hitTarget, setHitTarget] = useState<string | null>(null);
+interface BattleScreenProps {
+  run: RunState;
+  onBattleEnd: (result: { victory: boolean; party: Pokemon[]; kills: number }) => void;
+  onInventoryUpdate: (inventory: InventoryItem[]) => void;
+  onGoldUpdate: (gold: number) => void;
+}
+
+export default function BattleScreen({ run, onBattleEnd, onInventoryUpdate, onGoldUpdate }: BattleScreenProps): React.ReactElement {
   const [activeTab, setActiveTab] = useState<"fight" | "party" | "items">("fight");
+  const [activeMonIndex, setActiveMonIndex] = useState(run.activeIndex);
+  const [partyState, setPartyState] = useState<Pokemon[]>(
+    () => run.party.map(p => ({ ...p, currentHp: p.currentHp }))
+  );
+  const [fightOver, setFightOver] = useState(false);
 
-  const playerMon = buildPokemon("charmander", 10 + floor);
-  const enemyMon = buildRandomEnemy(floor);
+  const currentMon = partyState[activeMonIndex];
 
-  const { state, selectMove } = useBattleEngine(playerMon, enemyMon);
-  const { log, player, enemy } = state;
+  const enemy = useMemo(
+    () => buildRandomEnemy(run.fight, run.difficulty),
+    [run.fight, run.difficulty]
+  );
 
-  const { address } = useAccount();
-  const { writeContract, isPending, isSuccess } = useWriteContract();
+  const { state, selectMove, resetBattle, switchPokemon } = useBattleEngine(currentMon, enemy);
+
+  const prevFight = useRef(run.fight);
+
+  useEffect(() => {
+    if (prevFight.current === run.fight) {
+      prevFight.current = run.fight;
+      return;
+    }
+    prevFight.current = run.fight;
+    resetBattle(partyState[activeMonIndex], enemy);
+    setFightOver(false);
+  }, [run.fight]);
+
+  useEffect(() => {
+    if (!fightOver && (state.phase === "victory" || state.phase === "defeat" || state.phase === "draw")) {
+      setFightOver(true);
+      const updatedParty = partyState.map((m, i) =>
+        i === activeMonIndex ? { ...state.player } : m
+      );
+      setPartyState(updatedParty);
+
+      if (state.phase === "victory") {
+        const goldEarned = 20 + run.fight * 5;
+        onGoldUpdate(run.gold + goldEarned);
+      }
+    }
+  }, [state.phase]);
+
+  useEffect(() => {
+    if (!fightOver) return;
+    if (state.phase === "victory") {
+      const timer = setTimeout(() => {
+        const enemyLevel = state.enemy.level;
+        const baseXp = enemyLevel * 8;
+        const updatedParty = partyState.map((m, i) => {
+          const mon = i === activeMonIndex ? { ...state.player } : m;
+          const survived = mon.currentHp > 0;
+          const bonus = survived ? enemyLevel * 3 : 0;
+          return addXpAndLevelUp(mon, baseXp + bonus);
+        });
+        onBattleEnd({ victory: true, party: updatedParty, kills: 1 });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+    if (state.phase === "defeat") {
+      const stillAlive = partyState.filter((m, i) =>
+        i !== activeMonIndex ? m.currentHp > 0 : false
+      );
+      if (stillAlive.length > 0) {
+        const nextIdx = partyState.findIndex((m, i) => i !== activeMonIndex && m.currentHp > 0);
+        setActiveMonIndex(nextIdx);
+        switchPokemon(partyState[nextIdx]);
+        setFightOver(false);
+        return;
+      }
+      const timer = setTimeout(() => {
+        onBattleEnd({ victory: false, party: partyState, kills: 0 });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+    if (state.phase === "draw") {
+      const timer = setTimeout(() => {
+        onBattleEnd({ victory: false, party: partyState, kills: 0 });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [fightOver, state.phase]);
 
   const handleMoveClick = (move: Move) => {
-    const moveIndex = player.moves.findIndex(m => m.name === move.name);
+    if (state.phase !== "idle" || fightOver) return;
+    const moveIndex = currentMon.moves.findIndex(m => m.name === move.name);
     if (moveIndex >= 0) {
-      setHitTarget(enemy.currentHp > 0 ? "enemy" : "player");
-      setTimeout(() => setHitTarget(null), 800);
       selectMove(moveIndex);
-
-      if (state.phase === "idle" && enemy.currentHp <= 0) {
-        setKills(k => k + 1);
-        setGold(g => g + 20 + floor * 5);
-        setTimeout(() => {
-          setFloor(f => f + 1);
-        }, 1500);
-      }
     }
   };
 
-  const handleSwitch = (_idx: number) => {
+  const handleSwitch = (idx: number) => {
+    if (state.phase !== "idle" || fightOver || partyState[idx].currentHp === 0) return;
+    const updatedParty = partyState.map((m, i) =>
+      i === activeMonIndex ? { ...state.player, moves: [...state.player.moves] } : m
+    );
+    setPartyState(updatedParty);
+    setActiveMonIndex(idx);
+    switchPokemon(updatedParty[idx]);
     setActiveTab("fight");
   };
 
-  const handleSettleRun = () => {
-    if (!address) return;
+  const handleUseItem = (item: InventoryItem) => {
+    if (state.phase !== "idle" || fightOver) return;
+    let mon = { ...partyState[activeMonIndex] };
+    const newInv = [...run.inventory];
+    const invIdx = newInv.findIndex(i => i.id === item.id);
+    if (invIdx === -1) return;
 
-    writeContract({
-      address: CONTRACT_ADDRESSES.gameSettler as `0x${string}`,
-      abi: CONTRACT_ABIS.gameSettler,
-      functionName: 'settleRun',
-      args: [
-        address,
-        parseEther(String(gold * 2)),
-        false,
-        parseEther("0"),
-        []
-      ]
-    } as any, {
-      onSuccess: () => {
-        setTimeout(() => onExitRun(), 2500);
-      },
-      onError: (_err: Error) => { }
-    });
+    if (item.healAmount) {
+      const healed = Math.min(mon.stats.hp, mon.currentHp + item.healAmount);
+      mon = { ...mon, currentHp: healed };
+    }
+    if (item.revivePercent && mon.currentHp === 0) {
+      const revived = Math.floor(mon.stats.hp * item.revivePercent);
+      mon = { ...mon, currentHp: revived };
+    }
+    if (item.ppRestore) {
+      const updatedMoves = mon.moves.map(m => ({
+        ...m,
+        pp: Math.min(m.ppMax, m.pp + (item.ppRestore || 0)),
+      }));
+      mon = { ...mon, moves: updatedMoves };
+    }
+
+    setPartyState(partyState.map((m, i) => (i === activeMonIndex ? mon : m)));
+    switchPokemon(mon);
+
+    newInv[invIdx].count -= 1;
+    if (newInv[invIdx].count <= 0) {
+      newInv.splice(invIdx, 1);
+    }
+    onInventoryUpdate(newInv);
   };
+
+  const canAct = state.phase === "idle" && !fightOver;
 
   return (
     <div className="outer-texture">
       <div className="outer-container">
-        <RunStatusBar floor={floor} gold={gold} kills={kills} />
+        <RunStatusBar fight={run.fight} maxFights={run.maxFights} gold={run.gold} kills={run.kills} />
 
         <div className="main-content">
           <div className="theater-container">
             <div className="theater-rim scanlines phosphor-vignette theater-bg">
               <div style={{ position: "absolute", top: 16, left: 16, zIndex: 20 }}>
-                <TheaterHpBlock pokemon={enemy} isEnemy={true} />
+                <TheaterHpBlock pokemon={state.enemy} isEnemy={true} />
               </div>
-
               <div style={{ position: "absolute", bottom: 16, right: 16, zIndex: 20 }}>
-                <TheaterHpBlock pokemon={player} isEnemy={false} />
+                <TheaterHpBlock pokemon={state.player} isEnemy={false} />
               </div>
-
-              <SpriteArea player={player} enemy={enemy} hitTarget={hitTarget} />
-
-              {[["0","0"], ["0","auto"], ["auto","0"], ["auto","auto"]].map((_, i) => (
+              <SpriteArea player={state.player} enemy={state.enemy} />
+              {[[0,0],[0,1],[1,0],[1,1]].map((_, i) => (
                 <div key={i} className={`theater-corner theater-corner-${i}`} />
               ))}
-
               <div className="theater-floor-indicator">
-                — FLOOR {floor} —
+                — FIGHT {run.fight} —
               </div>
             </div>
           </div>
@@ -339,65 +416,48 @@ export default function BattleScreen({ onExitRun }: BattleScreenProps): React.Re
                 <div className="hud-left-header">
                   <span className="stat-label">COMBAT LOG</span>
                 </div>
-                <CombatLog entries={log} />
+                <CombatLog entries={state.log} />
               </div>
 
               <div className="hud-right">
                 {activeTab === "fight" && (
                   <div className="moves-grid">
-                    {player.moves.map((move, i) => (
-                      <MoveButton key={i} move={move} onClick={handleMoveClick} />
+                    {currentMon.moves.map((move, i) => (
+                      <MoveButton key={i} move={move} onClick={handleMoveClick} disabled={!canAct} />
                     ))}
                   </div>
                 )}
 
                 {activeTab === "party" && (
                   <PartyRoster
-                    party={[player]}
-                    activeIndex={0}
+                    party={partyState}
+                    activeIndex={activeMonIndex}
                     onSwitch={handleSwitch}
+                    disabled={!canAct}
                   />
                 )}
 
                 {activeTab === "items" && (
-                  <div className="items-panel">
-                    <span className="items-empty">NO ITEMS IN INVENTORY</span>
-                    <span className="items-description">Visit the shop between floors to acquire items.</span>
-                  </div>
+                  <InventoryPanel
+                    inventory={run.inventory}
+                    onUseItem={handleUseItem}
+                    disabled={!canAct}
+                  />
                 )}
               </div>
             </div>
 
             <div className="hud-footer">
               <div style={{ display: "flex", gap: 12 }}>
-                <span className="stat-label">ATK <span style={{ color: "#e8d5a3" }}>{player.stats.atk}</span></span>
-                <span className="stat-label">DEF <span style={{ color: "#e8d5a3" }}>{player.stats.def}</span></span>
-                <span className="stat-label">SPD <span style={{ color: "#e8d5a3" }}>{player.stats.spe}</span></span>
+                <span className="stat-label">ATK <span style={{ color: "#e8d5a3" }}>{currentMon.stats.atk}</span></span>
+                <span className="stat-label">DEF <span style={{ color: "#e8d5a3" }}>{currentMon.stats.def}</span></span>
+                <span className="stat-label">SPD <span style={{ color: "#e8d5a3" }}>{currentMon.stats.spe}</span></span>
               </div>
-              <button
-                className="flee-button"
-                onClick={handleSettleRun}
-                disabled={isPending || isSuccess}
-                onMouseEnter={e => {
-                  if (isPending || isSuccess) return;
-                  e.currentTarget.style.boxShadow = "0 0 10px rgba(105,20,14,0.6)";
-                  e.currentTarget.style.color = "#fff";
-                }}
-                onMouseLeave={e => {
-                  if (isPending || isSuccess) return;
-                  e.currentTarget.style.boxShadow = "none";
-                  e.currentTarget.style.color = "#e8d5a3";
-                }}
-                style={{ opacity: (isPending || isSuccess) ? 0.5 : 1, cursor: (isPending || isSuccess) ? "not-allowed" : "pointer" }}
-              >
-                {isPending ? "SETTLING..." : isSuccess ? "SUCCESS!" : "SETTLE RUN ON-CHAIN"}
-              </button>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#3C1518" }}>
+                {currentMon.name} · ACTIVE
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="app-footer">
-          ROGUELITE BATTLE CLIENT · RESULTS SETTLED ON-CHAIN AT RUN END
         </div>
       </div>
     </div>
