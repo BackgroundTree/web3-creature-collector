@@ -1,35 +1,26 @@
-/**
- * src/hooks/useBattleEngine.ts
- *
- * Owns ALL mutable battle state.  The math lives in src/engine/ — this hook
- * just orchestrates state transitions and calls those pure functions.
- */
-
 import { useCallback, useReducer } from "react";
-
-import { calculateDamage }              from "../engine/damage";
+import { calculateDamage } from "../engine/damage";
 import { determineTurnOrder, chooseEnemyMoveIndex } from "../engine/turn";
-import type { BattleState, Pokemon, TurnLogEntry }  from "../types";
-
-// ─────────────────────────────────────────────
-//  Action types
-// ─────────────────────────────────────────────
+import type { BattleState, Pokemon, TurnLogEntry } from "../types";
 
 type BattleAction =
   | { type: "SELECT_MOVE"; moveIndex: number }
-  | { type: "RESET"; player: Pokemon; enemy: Pokemon };
-
-// ─────────────────────────────────────────────
-//  Pure reducer — no side-effects
-// ─────────────────────────────────────────────
+  | { type: "RESET"; player: Pokemon; enemy: Pokemon }
+  | { type: "SWITCH_POKEMON"; player: Pokemon };
 
 function battleReducer(state: BattleState, action: BattleAction): BattleState {
   switch (action.type) {
-    // ── RESET ─────────────────────────────────────────────────────────────────
     case "RESET":
       return buildInitialState(action.player, action.enemy);
 
-    // ── SELECT_MOVE ────────────────────────────────────────────────────────────
+    case "SWITCH_POKEMON":
+      return {
+        ...state,
+        phase: "idle",
+        player: { ...action.player, currentHp: action.player.currentHp },
+        selectedMoveIndex: null,
+      };
+
     case "SELECT_MOVE": {
       if (state.phase !== "idle") return state;
 
@@ -37,7 +28,6 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       const newLog: TurnLogEntry[] = [];
       const turn = state.turn + 1;
 
-      // Clone HP so we can mutate
       let playerHp = state.player.currentHp;
       let enemyHp  = state.enemy.currentHp;
 
@@ -45,20 +35,24 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
       const enemyMoveIdx = chooseEnemyMoveIndex(state.enemy.moves.length);
       const enemyMove  = state.enemy.moves[enemyMoveIdx];
 
-      // Determine who swings first
       const order = determineTurnOrder(
         state.player.stats.spe,
         state.enemy.stats.spe,
       );
 
       const actors: Array<"player" | "enemy"> = [order.first, order.second];
+      let ppDecremented = false;
 
       for (const actor of actors) {
-        // Skip a fainted combatant mid-turn
         if (playerHp <= 0 || enemyHp <= 0) break;
 
         if (actor === "player") {
           const result = calculateDamage(state.player, state.enemy, playerMove);
+
+          if (!ppDecremented && playerMove.pp > 0) {
+            playerMove.pp -= 1;
+            ppDecremented = true;
+          }
 
           if (result.missed) {
             newLog.push({ turn, actor: "player", message: `${state.player.name} used ${playerMove.name} — but it missed!` });
@@ -76,6 +70,10 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         } else {
           const result = calculateDamage(state.enemy, state.player, enemyMove);
 
+          if (enemyMove.pp > 0) {
+            enemyMove.pp -= 1;
+          }
+
           if (result.missed) {
             newLog.push({ turn, actor: "enemy", message: `${state.enemy.name} used ${enemyMove.name} — but it missed!` });
           } else {
@@ -92,7 +90,6 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         }
       }
 
-      // Determine outcome
       const phase =
         playerHp <= 0 && enemyHp <= 0 ? "draw"
         : playerHp <= 0               ? "defeat"
@@ -107,8 +104,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
         ...state,
         phase,
         turn,
-        player: { ...state.player, currentHp: playerHp },
-        enemy:  { ...state.enemy,  currentHp: enemyHp  },
+        player: { ...state.player, currentHp: playerHp, moves: [...state.player.moves] },
+        enemy:  { ...state.enemy,  currentHp: enemyHp, moves: [...state.enemy.moves] },
         log:    [...state.log, ...newLog],
         selectedMoveIndex: moveIndex,
       };
@@ -119,16 +116,12 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
   }
 }
 
-// ─────────────────────────────────────────────
-//  Helpers
-// ─────────────────────────────────────────────
-
 function buildInitialState(player: Pokemon, enemy: Pokemon): BattleState {
   return {
     phase:             "idle",
     turn:              0,
     player:            { ...player, currentHp: player.stats.hp },
-    enemy:             { ...enemy,  currentHp: enemy.stats.hp  },
+    enemy:             { ...enemy,  currentHp: enemy.stats.hp },
     log:               [{ turn: 0, actor: "enemy", message: `A wild ${enemy.name} appeared!` }],
     selectedMoveIndex: null,
   };
@@ -141,14 +134,11 @@ function effectivenessFlavour(e: number): string {
   return "";
 }
 
-// ─────────────────────────────────────────────
-//  Public hook
-// ─────────────────────────────────────────────
-
 export interface UseBattleEngineReturn {
   state:      BattleState;
   selectMove: (moveIndex: number) => void;
   resetBattle: (player: Pokemon, enemy: Pokemon) => void;
+  switchPokemon: (player: Pokemon) => void;
 }
 
 export function useBattleEngine(
@@ -169,5 +159,9 @@ export function useBattleEngine(
     dispatch({ type: "RESET", player, enemy });
   }, []);
 
-  return { state, selectMove, resetBattle };
+  const switchPokemon = useCallback((player: Pokemon) => {
+    dispatch({ type: "SWITCH_POKEMON", player });
+  }, []);
+
+  return { state, selectMove, resetBattle, switchPokemon };
 }

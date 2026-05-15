@@ -694,5 +694,13 @@
     "power": 200,
     "accuracy": 100,
     "effect": { "target": "self", "condition": "fainted" }
+  },
+  "shadow_ball": {
+    "name": "Shadow Ball",
+    "type": "Ghost",
+    "category": "Special",
+    "power": 80,
+    "accuracy": 100,
+    "effect": { "target": "opponent", "stat": "spDef", "stages": -1, "chance": 0.2 }
   }
 }

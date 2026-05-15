@@ -1,4 +1,4 @@
-import { useConnection, useReadContract } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '../contracts/config';
 
 export interface CreatureNFTData {
@@ -10,7 +10,7 @@ export interface CreatureNFTData {
 }
 
 export function usePC() {
-  const { address } = useConnection();
+  const { address } = useAccount();
 
   const { data, isPending, refetch } = useReadContract({
     address: CONTRACT_ADDRESSES.creatureNFT as `0x${string}`,
