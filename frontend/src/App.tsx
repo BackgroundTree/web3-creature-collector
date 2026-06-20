@@ -16,7 +16,7 @@ function createNewRun(party: Pokemon[], difficulty: Difficulty): RunState {
     party: party.map(p => ({ ...p, currentHp: p.stats.hp })),
     activeIndex: 0,
     fight: 1,
-    maxFights: 1,
+    maxFights: 3,
     gold: 0,
     inventory: [],
     kills: 0,

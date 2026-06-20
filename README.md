@@ -20,12 +20,12 @@ To optimize user experience and eliminate prohibitive gas fees, the application 
 ## 🛠 Tech Stack
 
 **Frontend (Client-Side State Machine):**
-* React + TypeScript
+* React + TS
 * Vite (Build Tool)
 * Tailwind CSS (Styling)
 * Wagmi & RainbowKit (Web3 Wallet Integration)
 
 **Backend (Smart Contracts & Network):**
 * Solidity
-* Hardhat (Local compilation, testing, and deployment environment)
+* Hardhat (For Local compilation, testing, and deployment environment)
 * OpenZeppelin Contracts (Secure ERC-20 & ERC-721 implementations)

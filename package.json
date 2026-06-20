@@ -3,9 +3,11 @@
     "axios": "^1.16.0"
   },
   "devDependencies": {
+    "@types/node": "^25.8.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "hardhat": "^3.4.5"
+    "hardhat": "^3.4.5",
+    "hardhat-gas-reporter": "^2.3.0"
   },
   "name": "web3-creature-collector",
   "version": "1.0.0",
